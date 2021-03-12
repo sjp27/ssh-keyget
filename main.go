@@ -15,13 +15,14 @@ import (
 	"os"
 	"strings"
 )
+
 const ssh2Header = "---- BEGIN SSH2 PUBLIC KEY ----"
 const ssh2Footer = "---- END SSH2 PUBLIC KEY ----"
 const ssh2Width = 70
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: %s <host:port> <type(rsa,dsa,ecdsa,ed25519)> <export(e)>", os.Args[0])
+		fmt.Println("Usage: ssh-keyget <host:port> <type(rsa,dsa,ecdsa,ed25519)> <export(e)>")
 	} else if len(os.Args) == 3 {
 		err := connectToHost(os.Args[1], os.Args[2], "")
 		if err != nil {
@@ -68,7 +69,7 @@ func getPublicKeyInfo(in []byte) (string, int, error) {
 	switch pk.Type() {
 	case ssh.KeyAlgoDSA:
 		w := struct {
-			Name string
+			Name       string
 			P, Q, G, Y *big.Int
 		}{}
 		if err := ssh.Unmarshal(pk.Marshal(), &w); err != nil {
@@ -94,7 +95,7 @@ func getPublicKeyInfo(in []byte) (string, int, error) {
 	case ssh.KeyAlgoED25519:
 		return "ED25519", 256, nil
 	}
-	return "", 0, fmt.Errorf("Unsupported key type: %s", pk.Type())
+	return "", 0, fmt.Errorf("unsupported key type: %s", pk.Type())
 }
 
 // trustedHostKeyCallback host key callback from connect
@@ -102,15 +103,15 @@ func trustedHostKeyCallback(export string) ssh.HostKeyCallback {
 	return func(_ string, _ net.Addr, k ssh.PublicKey) error {
 		ks := base64.StdEncoding.EncodeToString(k.Marshal())
 
-		keytype, len, _ := getPublicKeyInfo(k.Marshal())
+		keytype, length, _ := getPublicKeyInfo(k.Marshal())
 
 		fp := strings.ReplaceAll(ssh.FingerprintLegacyMD5(k), ":", "")
 
-		comment:= keytype + fmt.Sprintf("%v",len) + ",MD5:" + fp
+		comment := keytype + fmt.Sprintf("%v", length) + ",MD5:" + fp
 
-		if(export == "e") {
+		if export == "e" {
 			fmt.Println(ssh2Header)
-			fmt.Println("Comment: \"" + comment +"\"")
+			fmt.Println("Comment: \"" + comment + "\"")
 			fmt.Println(strings.Join(chunkString(ks, ssh2Width), "\n"))
 			fmt.Println(ssh2Footer)
 		} else {
@@ -121,11 +122,11 @@ func trustedHostKeyCallback(export string) ssh.HostKeyCallback {
 }
 
 // connectToHost connect to host to get public key
-func connectToHost(host string, keytype string, export string) (error) {
+func connectToHost(host string, keytype string, export string) error {
 	sshConfig := &ssh.ClientConfig{
-		User: "",
-		Auth: []ssh.AuthMethod{ssh.Password("")},
-		HostKeyCallback: trustedHostKeyCallback(export),
+		User:              "",
+		Auth:              []ssh.AuthMethod{ssh.Password("")},
+		HostKeyCallback:   trustedHostKeyCallback(export),
 		HostKeyAlgorithms: []string{ssh.KeyAlgoRSA},
 	}
 
@@ -135,7 +136,7 @@ func connectToHost(host string, keytype string, export string) (error) {
 	case "dsa":
 		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoDSA}
 	case "ecdsa":
-		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoECDSA256,ssh.KeyAlgoECDSA384,ssh.KeyAlgoECDSA521}
+		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoECDSA256, ssh.KeyAlgoECDSA384, ssh.KeyAlgoECDSA521}
 	case "ed25519":
 		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoED25519}
 	default:
@@ -146,7 +147,8 @@ func connectToHost(host string, keytype string, export string) (error) {
 	if err != nil {
 		return err
 	}
-	client.Close()
+
+	_ = client.Close()
 
 	return nil
 }
