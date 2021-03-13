@@ -73,8 +73,7 @@ func getPublicKeyInfo(in []byte) (string, int, error) {
 	case ssh.KeyAlgoRSA:
 		w := struct {
 			Name string
-			E    *big.Int
-			N    *big.Int
+			E, N *big.Int
 		}{}
 		if err := ssh.Unmarshal(pk.Marshal(), &w); err != nil {
 			return "", 0, err
