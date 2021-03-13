@@ -63,7 +63,7 @@ func getPublicKeyInfo(in []byte) (string, int, error) {
 	switch pk.Type() {
 	case ssh.KeyAlgoDSA:
 		w := struct {
-			Name       string
+			Name string
 			P, Q, G, Y *big.Int
 		}{}
 		if err := ssh.Unmarshal(pk.Marshal(), &w); err != nil {
