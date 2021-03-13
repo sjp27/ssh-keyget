@@ -24,15 +24,9 @@ func main() {
 	if len(os.Args) < 3 {
 		fmt.Println("Usage: ssh-keyget <host:port> <type(rsa,dsa,ecdsa,ed25519)> <export(e)>")
 	} else if len(os.Args) == 3 {
-		err := connectToHost(os.Args[1], os.Args[2], "")
-		if err != nil {
-			return
-		}
+		_ = connectToHost(os.Args[1], os.Args[2], "")
 	} else if len(os.Args) == 4 {
-		err := connectToHost(os.Args[1], os.Args[2], os.Args[3])
-		if err != nil {
-			return
-		}
+		_ = connectToHost(os.Args[1], os.Args[2], os.Args[3])
 	} else {
 		fmt.Println("Too many arguments")
 	}
@@ -107,7 +101,7 @@ func trustedHostKeyCallback(export string) ssh.HostKeyCallback {
 
 		fp := strings.ReplaceAll(ssh.FingerprintLegacyMD5(k), ":", "")
 
-		comment := keytype + fmt.Sprintf("%v", length) + ",MD5:" + fp
+		comment := keytype + " " + fmt.Sprintf("%v", length) + ",MD5:" + fp
 
 		if export == "e" {
 			fmt.Println(ssh2Header)
@@ -131,10 +125,10 @@ func connectToHost(host string, keytype string, export string) error {
 	}
 
 	switch keytype {
-	case "rsa":
-		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoRSA}
 	case "dsa":
 		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoDSA}
+	case "rsa":
+		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoRSA}
 	case "ecdsa":
 		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoECDSA256, ssh.KeyAlgoECDSA384, ssh.KeyAlgoECDSA521}
 	case "ed25519":
