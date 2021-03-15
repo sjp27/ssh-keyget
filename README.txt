@@ -10,7 +10,7 @@ SSH-KEYGET - get SSH public key from server
 SYNOPSIS
 
 
-SSH-KEYGET [_host:port_][_type(rsa,dsa,ecdsa,ed25519)_] [_export(e)_]
+SSH-KEYGET [_host:port_][_type(dsa,rsa,ecdsa,ed25519)_] [_export(e)_]
 
 
 
@@ -26,7 +26,7 @@ The options are as follows:
 _type_
 
   Specify the type of the key to fetch from the server. The possible
-  values are "rsa", "dsa", "ecdsa", "ed25519".
+  values are "dsa", "rsa", "ecdsa", "ed25519".
 
 _export_
 

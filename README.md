@@ -4,7 +4,7 @@
 # SYNOPSIS
 **ssh-keyget**
 [*host:port*]
-[*type(rsa,dsa,ecdsa,ed25519)*]
+[*type(dsa,rsa,ecdsa,ed25519)*]
 [*export(e)*]
 
 # DESCRIPTION
@@ -20,8 +20,8 @@ The options are as follows:
 
 > Specify the type of the key to fetch from the server.
 > The possible values are
-> "rsa",
 > "dsa",
+> "rsa",
 > "ecdsa",
 > "ed25519".
 
