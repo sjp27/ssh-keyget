@@ -25,7 +25,7 @@ const ssh2Width = 70
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println(version + " Usage: ssh-keyget <host:port> <type(rsa,dsa,ecdsa,ed25519)> <export(e)>")
+		fmt.Println(version + " Usage: ssh-keyget <host:port> <type(dsa,rsa,ecdsa,ed25519)> <export(e)>")
 	} else if len(os.Args) == 3 {
 		_ = connectToHost(os.Args[1], os.Args[2], "")
 	} else if len(os.Args) == 4 {
