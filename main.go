@@ -13,16 +13,19 @@ import (
 	"math/big"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 )
 
+const version = "v1.0"
+const sshDefaultPort = 22
 const ssh2Header = "---- BEGIN SSH2 PUBLIC KEY ----"
 const ssh2Footer = "---- END SSH2 PUBLIC KEY ----"
 const ssh2Width = 70
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: ssh-keyget <host:port> <type(dsa,rsa,ecdsa,ed25519)> <export(e)>")
+		fmt.Println(version + " Usage: ssh-keyget <host:port> <type(rsa,dsa,ecdsa,ed25519)> <export(e)>")
 	} else if len(os.Args) == 3 {
 		_ = connectToHost(os.Args[1], os.Args[2], "")
 	} else if len(os.Args) == 4 {
@@ -30,6 +33,15 @@ func main() {
 	} else {
 		fmt.Println("Too many arguments")
 	}
+}
+
+// truncateString truncate string to given size
+func truncateString(s string, size int) string {
+	ts := s
+	if len(s) > size {
+		ts = s[0:size]
+	}
+	return ts
 }
 
 // chunkString convert string to chunks of given size
@@ -92,23 +104,27 @@ func getPublicKeyInfo(in []byte) (string, int, error) {
 }
 
 // trustedHostKeyCallback host key callback from connect
-func trustedHostKeyCallback(export string) ssh.HostKeyCallback {
+func trustedHostKeyCallback(host string, export string) ssh.HostKeyCallback {
 	return func(_ string, _ net.Addr, k ssh.PublicKey) error {
 		ks := base64.StdEncoding.EncodeToString(k.Marshal())
 
 		keytype, length, _ := getPublicKeyInfo(k.Marshal())
 
-		fp := strings.ReplaceAll(ssh.FingerprintLegacyMD5(k), ":", "")
+		fpmd5 := ssh.FingerprintLegacyMD5(k)
+		fpsha256 := ssh.FingerprintSHA256(k)
 
-		comment := keytype + " " + fmt.Sprintf("%v", length) + ",MD5:" + fp
+		comment := keytype + " " + strconv.Itoa(length) + ", " + host
 
 		if export == "e" {
 			fmt.Println(ssh2Header)
-			fmt.Println("Comment: \"" + comment + "\"")
+			ssh2Comment := "Comment: " + comment
+			fmt.Println(truncateString(ssh2Comment, ssh2Width - 1) + "\\")
+			fmt.Println("MD5:" + fpmd5 + "\\")
+			fmt.Println(fpsha256)
 			fmt.Println(strings.Join(chunkString(ks, ssh2Width), "\n"))
 			fmt.Println(ssh2Footer)
 		} else {
-			fmt.Println(k.Type() + " " + ks + " " + comment)
+			fmt.Println(k.Type() + " " + ks + " " + comment + ", MD5:" + fpmd5 + ", " + fpsha256)
 		}
 		return nil
 	}
@@ -116,10 +132,14 @@ func trustedHostKeyCallback(export string) ssh.HostKeyCallback {
 
 // connectToHost connect to host to get public key
 func connectToHost(host string, keytype string, export string) error {
+	if !strings.Contains(host, ":")	{
+		host = host + ":" + strconv.Itoa(sshDefaultPort)
+	}
+
 	sshConfig := &ssh.ClientConfig{
 		User:              "",
 		Auth:              []ssh.AuthMethod{ssh.Password("")},
-		HostKeyCallback:   trustedHostKeyCallback(export),
+		HostKeyCallback:   trustedHostKeyCallback(host, export),
 		HostKeyAlgorithms: []string{ssh.KeyAlgoRSA},
 	}
 
