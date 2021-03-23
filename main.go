@@ -27,9 +27,9 @@ func main() {
 	if len(os.Args) < 3 {
 		fmt.Println(version + " Usage: ssh-keyget <host:port> <type(dsa,rsa,ecdsa,ed25519)> <export(e)>")
 	} else if len(os.Args) == 3 {
-		_ = connectToHost(os.Args[1], os.Args[2], "")
+		connectToHost(os.Args[1], os.Args[2], "")
 	} else if len(os.Args) == 4 {
-		_ = connectToHost(os.Args[1], os.Args[2], os.Args[3])
+		connectToHost(os.Args[1], os.Args[2], os.Args[3])
 	} else {
 		fmt.Println("Too many arguments")
 	}
@@ -131,7 +131,7 @@ func trustedHostKeyCallback(host string, export string) ssh.HostKeyCallback {
 }
 
 // connectToHost connect to host to get public key
-func connectToHost(host string, keytype string, export string) error {
+func connectToHost(host string, keytype string, export string){
 	if !strings.Contains(host, ":")	{
 		host = host + ":" + strconv.Itoa(sshDefaultPort)
 	}
@@ -140,7 +140,6 @@ func connectToHost(host string, keytype string, export string) error {
 		User:              "",
 		Auth:              []ssh.AuthMethod{ssh.Password("")},
 		HostKeyCallback:   trustedHostKeyCallback(host, export),
-		HostKeyAlgorithms: []string{ssh.KeyAlgoRSA},
 	}
 
 	switch keytype {
@@ -156,12 +155,10 @@ func connectToHost(host string, keytype string, export string) error {
 		fmt.Println("Unsupported key type")
 	}
 
-	client, err := ssh.Dial("tcp", host, sshConfig)
-	if err != nil {
-		return err
+	if(len(sshConfig.HostKeyAlgorithms) > 0){
+		client, err := ssh.Dial("tcp", host, sshConfig)
+		if err == nil {
+			_ = client.Close()
+		}
 	}
-
-	_ = client.Close()
-
-	return nil
 }
