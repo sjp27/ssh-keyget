@@ -155,7 +155,7 @@ func connectToHost(host string, keytype string, export string){
 		fmt.Println("Unsupported key type")
 	}
 
-	if(len(sshConfig.HostKeyAlgorithms) > 0){
+	if len(sshConfig.HostKeyAlgorithms) > 0 {
 		client, err := ssh.Dial("tcp", host, sshConfig)
 		if err == nil {
 			_ = client.Close()

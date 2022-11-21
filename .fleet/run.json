@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "type": "go",
+            "name": "ssh-keyget (windows)",
+            "goExecPath": "C:/Program Files/Go/bin/go.exe",
+            "buildParams": [
+                "$PROJECT_DIR$/main.go",
+            ],
+            "runParams":  ["192.168.1.1:22", "rsa", "e"]
+        },
+        {
+            "type": "go",
+            "name": "ssh-keyget (linux)",
+            "goExecPath": "/usr/local/go/bin/go",
+            "buildParams": [
+                "$PROJECT_DIR$/main.go",
+            ],
+            "runParams":  ["192.168.1.1:22", "rsa", "e"]
+        }
+
+    ]
+}
