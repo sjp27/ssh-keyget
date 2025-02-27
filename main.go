@@ -25,7 +25,7 @@ const ssh2Width = 70
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println(version + " Usage: ssh-keyget <host:port> <type(dsa,rsa,ecdsa,ed25519)> <export(e)>")
+		fmt.Println(version + " Usage: ssh-keyget <host:port> <type(dsa,rsa,rsa_sha2,ecdsa,ed25519)> <export(e)>")
 	} else if len(os.Args) == 3 {
 		connectToHost(os.Args[1], os.Args[2], "")
 	} else if len(os.Args) == 4 {
@@ -75,7 +75,7 @@ func getPublicKeyInfo(in []byte) (string, int, error) {
 	switch pk.Type() {
 	case ssh.KeyAlgoDSA:
 		w := struct {
-			Name string
+			Name       string
 			P, Q, G, Y *big.Int
 		}{}
 		if err := ssh.Unmarshal(pk.Marshal(), &w); err != nil {
@@ -118,7 +118,7 @@ func trustedHostKeyCallback(host string, export string) ssh.HostKeyCallback {
 		if export == "e" {
 			fmt.Println(ssh2Header)
 			ssh2Comment := "Comment: " + comment
-			fmt.Println(truncateString(ssh2Comment, ssh2Width - 1) + "\\")
+			fmt.Println(truncateString(ssh2Comment, ssh2Width-1) + "\\")
 			fmt.Println("MD5:" + fpmd5 + "\\")
 			fmt.Println(fpsha256)
 			fmt.Println(strings.Join(chunkString(ks, ssh2Width), "\n"))
@@ -131,15 +131,15 @@ func trustedHostKeyCallback(host string, export string) ssh.HostKeyCallback {
 }
 
 // connectToHost connect to host to get public key
-func connectToHost(host string, keytype string, export string){
-	if !strings.Contains(host, ":")	{
+func connectToHost(host string, keytype string, export string) {
+	if !strings.Contains(host, ":") {
 		host = host + ":" + strconv.Itoa(sshDefaultPort)
 	}
 
 	sshConfig := &ssh.ClientConfig{
-		User:              "",
-		Auth:              []ssh.AuthMethod{ssh.Password("")},
-		HostKeyCallback:   trustedHostKeyCallback(host, export),
+		User:            "",
+		Auth:            []ssh.AuthMethod{ssh.Password("")},
+		HostKeyCallback: trustedHostKeyCallback(host, export),
 	}
 
 	switch keytype {
@@ -147,6 +147,8 @@ func connectToHost(host string, keytype string, export string){
 		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoDSA}
 	case "rsa":
 		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoRSA}
+	case "rsa_sha2":
+		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoRSASHA256, ssh.KeyAlgoRSASHA512}
 	case "ecdsa":
 		sshConfig.HostKeyAlgorithms = []string{ssh.KeyAlgoECDSA256, ssh.KeyAlgoECDSA384, ssh.KeyAlgoECDSA521}
 	case "ed25519":

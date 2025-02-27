@@ -4,7 +4,7 @@
 # SYNOPSIS
 **ssh-keyget**
 [*host:port*]
-[*type(dsa,rsa,ecdsa,ed25519)*]
+[*type(dsa,rsa,rsa_sha2,ecdsa,ed25519)*]
 [*export(e)*]
 
 # DESCRIPTION
@@ -22,6 +22,7 @@ The options are as follows:
 > The possible values are
 > "dsa",
 > "rsa",
+> "rsa_sha2",
 > "ecdsa",
 > "ed25519".
 
